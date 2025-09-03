@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:iconsax/iconsax.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,7 +12,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Urbanist'),
-      home: HomeScreen(),
+      home:BottomNavigation(),
+      
     );
   }
 }
@@ -39,6 +42,7 @@ class HomeScreen extends StatelessWidget {
     {"image": "assets/images/image12.png", "name": "24K Gold Elegantly crafted with lustrous pearls", "price": "USD 40"},
   ];
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,12 +51,39 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 50,),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: AppBar(
+                leading: Image.asset('assets/images/image13.png'),
+                leadingWidth: 30.27,
+                titleSpacing: 12,
+                title: Text("Good Morning Alex!"),
+                forceMaterialTransparency: true,
+                actions: [SizedBox(width: 18.08), Image.asset('assets/images/Vector.png'),SizedBox(width: 18.08) ,Image.asset('assets/images/Vector2.png')],
+              ),
+            ),
+            SizedBox(height: 24,),
+           Padding(
+             padding: const EdgeInsets.symmetric(horizontal: 20),
+             child: TextField(
+               decoration: InputDecoration(
+                 hint: Text("Explore to next purchase."),
+                 filled: true,
+                 border: OutlineInputBorder(
+                   borderRadius: BorderRadius.circular(4)
+                 ),
+              
+                 fillColor: Colors.grey
+               ),
+             ),
+           ),
+            SizedBox(height: 24,),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
+
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: Image.asset(
@@ -247,18 +278,18 @@ class _ProductCardState extends State<ProductCard> {
                     color: Colors.black,
                   ),
                 ),
-                   GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        isFavorite = !isFavorite;
-                      });
-                    },
-                    child: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.green,
-                      size: 24,
-                    ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isFavorite = !isFavorite;
+                    });
+                  },
+                  child: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : Colors.green,
+                    size: 24,
                   ),
+                ),
               ],
             ),
           ),
@@ -266,4 +297,100 @@ class _ProductCardState extends State<ProductCard> {
       ),
     );
   }
+
+
+
 }
+
+class BottomNavigation extends StatefulWidget {
+  const BottomNavigation({super.key});
+
+  @override
+  State<BottomNavigation> createState() => _BottomNavigationState();
+}
+
+class _BottomNavigationState extends State<BottomNavigation> {
+  int _selectedIndex = 0;
+
+  static const TextStyle optionStyle =
+  TextStyle(fontSize: 30,  fontWeight: FontWeight.bold);
+
+  static final List<Widget> _widgetOptions = <Widget>[
+    HomeScreen(),
+    const Text('Index 1: Categories', style: optionStyle),
+    const Text('Index 2: Chat', style: optionStyle),
+    const Text('Index 3: Settings', style: optionStyle),
+
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: _widgetOptions[_selectedIndex],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: Color(0xFFF3F4F6),
+        foregroundColor: Colors.black87,
+        elevation: 3,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add),
+
+      ),
+      bottomNavigationBar: ClipRRect(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+        child: BottomAppBar(
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 4.0,
+          color: Color(0xFFF3F4F6),
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    _selectedIndex == 0 ? Iconsax.home_21 : Iconsax.home_24
+                  ),
+                  color: Colors.black87,
+                  onPressed: () => _onItemTapped(0),
+                ),
+                IconButton(
+                  icon: Icon(
+                    _selectedIndex == 1 ? Iconsax.category_24 : Iconsax.category_24,
+                  ),
+                  color: Colors.black87,
+                  onPressed: () => _onItemTapped(1),
+                ),
+                const SizedBox(width: 40),
+                IconButton(
+                  icon: Icon(
+                    _selectedIndex == 2 ? Icons.chat : Icons.chat_outlined,
+                  ),
+                  color: Colors.black87,
+                  onPressed: () => _onItemTapped(2),
+                ),
+                IconButton(
+                  icon: Icon(
+                    _selectedIndex == 3 ? Icons.settings : Icons.settings_outlined,
+                  ),
+                  color: Colors.black87,
+                  onPressed: () => _onItemTapped(3),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
