@@ -26,6 +26,21 @@ class MyApp extends StatelessWidget
 
 class HomeScreen extends StatelessWidget
 {
+
+  String getGreeting(){
+    final hour = DateTime.now().hour;
+
+    if (hour >= 5 && hour < 12) {
+      return "Good Morning";
+    } else if (hour >= 12 && hour < 17) {
+      return "Good Afternoon";
+    } else if (hour >= 17 && hour < 21) {
+      return "Good Evening";
+    } else {
+      return "Good Night";
+    }
+  }
+
     final List<Map<String, String>> images = [
     {"image":"assets/images/image2.png", "name":"Shoes"},
     {"image":"assets/images/image3.png","name":"Shoes"},
@@ -49,6 +64,7 @@ class HomeScreen extends StatelessWidget
     {"image": "assets/images/image12.png", "name": "24K Gold Elegantly crafted with lustrous pearls", "price": "USD 40"}
     ];
 
+
     @override
     Widget build(BuildContext context)
     {
@@ -64,7 +80,7 @@ class HomeScreen extends StatelessWidget
                                 leading: Image.asset('assets/images/image13.png'),
                                 leadingWidth: 30.27,
                                 titleSpacing: 12,
-                                title: Text("Good Morning Alex!"),
+                                title: Text("${getGreeting()} Alex!"),
                                 forceMaterialTransparency: true,
                                 actions: [SizedBox(width: 18.08), Image.asset('assets/images/Vector.png'), SizedBox(width: 18.08), SvgPicture.asset('assets/images/bell.svg')]
                             )
