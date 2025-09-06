@@ -13,19 +13,18 @@ class ProductDatabaseRepository implements IRepository<Product>
     {
          await  db.insertProduct(
             ProductListingTableCompanion.insert(
-                id: '',
-                images: [],
-                category: '',
-                name: '',
-                price: 0 ,
-                isNegotiable: Value(false) ,
-                description: '',
-                condition: '',
-                location: '',
-                material: '',
-                color: '',
-                addNote:Value(''),
-                createdAt: ''
+                images: item.images ,
+                category: item.category ,
+                name: item.name,
+                price: item.price ?? 0,
+                isNegotiable: Value(item.isNegotiable) ,
+                description: item.description,
+                condition: item.condition,
+                location: item.location,
+                material: item.material,
+                color: item.color,
+                addNote:Value(item.addNote),
+                createdAt: item.createdAt ?? ''
 
             )
         );

@@ -14,14 +14,14 @@ class _ProductDetailState extends State<ProductDetail>
     final PageController _controller = PageController();
 
     @override
-    void dispose() 
+    void dispose()
     {
         _controller.dispose();
         super.dispose();
     }
 
     @override
-    Widget build(BuildContext context) 
+    Widget build(BuildContext context)
     {
 
         final List<Map<String, String>> images = [
@@ -256,49 +256,91 @@ class _ProductDetailState extends State<ProductDetail>
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                         Padding(
-                                          padding: const EdgeInsets.only(left: 20),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(100)
-                                            ),
-                                            child: Image.asset("assets/images/image14.png", fit: BoxFit.cover),
-                                          ),
+                                            padding: const EdgeInsets.only(left: 20),
+                                            child: Container(
+                                                decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(100)
+                                                ),
+                                                child: Image.asset("assets/images/image14.png", fit: BoxFit.cover)
+                                            )
                                         ),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(left: 20),
-                                            child: Text("John Doe",style: TextStyle(
-                                              fontWeight:FontWeight.w600,
-                                              fontSize: 20
-                                            ),),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(left: 20),
-                                            child: Text("Joined Since 2019",style: TextStyle(
-                                                fontWeight:FontWeight.w400,
-                                                fontSize: 14
-                                            ),),
-                                          )
-                                        ],
-                                      )
+                                        Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                                Padding(
+                                                    padding: const EdgeInsets.only(left: 20),
+                                                    child: Text("John Doe", style: TextStyle(
+                                                            fontWeight: FontWeight.w600,
+                                                            fontSize: 20
+                                                        ))
+                                                ),
+                                                Padding(
+                                                    padding: const EdgeInsets.only(left: 20),
+                                                    child: Text("Joined Since 2019", style: TextStyle(
+                                                            fontWeight: FontWeight.w400,
+                                                            fontSize: 14
+                                                        ))
+                                                )
+                                            ]
+                                        )
 
                                     ]
                                 )
                             ]
 
                         ),
-                      Padding(
-                          padding: const EdgeInsets.only(top: 24, left: 20),
-                          child: Text("Seller’s note", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600))
-                      ),
-                      Padding(
-                          padding: const EdgeInsets.only(top:6, left: 20),
-                          child: Text("Thank you for considering our luxurious Gucci laptop bag! This stunning piece is adorned with exquisite pearls and elegant gold accents, making it the perfect accessory for the modern professional.", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400))
-                      ),
-                      SizedBox(height: 50,),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 24, left: 20),
+                            child: Text("Seller’s note", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600))
+                        ),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 6, left: 20),
+                            child: Text("Thank you for considering our luxurious Gucci laptop bag! This stunning piece is adorned with exquisite pearls and elegant gold accents, making it the perfect accessory for the modern professional.", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400))
+                        ),
+                        SizedBox(height: 50),
 
+                        Center(
+                            child: ElevatedButton(onPressed: ()
+                                {
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    padding: EdgeInsets.only(left: 62, right: 62, top: 18, bottom: 18),
+                                    fixedSize: Size(350, 48),
+                                    backgroundColor: Color(0xFF32B780),
+
+                                    foregroundColor: Color(0xFFFFFFFF),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.zero
+                                    ),
+                                    textStyle: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.none
+
+
+                                    )
+
+                                ),
+
+                                child: Text("Chat with seller")
+                            )
+                        ),
+                      Center(
+                          child: TextButton(onPressed: ()
+                          {
+                          },
+                              style: TextButton.styleFrom(
+                                  fixedSize: Size(350, 60),
+                                  foregroundColor: Color(0xFF32B780),
+                                  textStyle: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                  )
+                              ),
+                              child: Text("Report")
+                          )
+                      ),
+                      SizedBox(height: 30),
 
                     ]
                 )

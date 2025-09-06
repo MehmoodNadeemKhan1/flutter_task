@@ -16,7 +16,8 @@ class $ProductListingTableTable extends ProductListingTable
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    clientDefault: () => const Uuid().v4(),
   );
   @override
   late final GeneratedColumnWithTypeConverter<List<String>, String> images =
@@ -176,8 +177,6 @@ class $ProductListingTableTable extends ProductListingTable
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('category')) {
       context.handle(
@@ -597,7 +596,7 @@ class ProductListingTableCompanion extends UpdateCompanion<ProductDB> {
     this.rowid = const Value.absent(),
   });
   ProductListingTableCompanion.insert({
-    required String id,
+    this.id = const Value.absent(),
     required List<String> images,
     required String category,
     required String name,
@@ -611,8 +610,7 @@ class ProductListingTableCompanion extends UpdateCompanion<ProductDB> {
     this.addNote = const Value.absent(),
     required String createdAt,
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       images = Value(images),
+  }) : images = Value(images),
        category = Value(category),
        name = Value(name),
        description = Value(description),
@@ -776,7 +774,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$ProductListingTableTableCreateCompanionBuilder =
     ProductListingTableCompanion Function({
-      required String id,
+      Value<String> id,
       required List<String> images,
       required String category,
       required String name,
@@ -1084,7 +1082,7 @@ class $$ProductListingTableTableTableManager
               ),
           createCompanionCallback:
               ({
-                required String id,
+                Value<String> id = const Value.absent(),
                 required List<String> images,
                 required String category,
                 required String name,

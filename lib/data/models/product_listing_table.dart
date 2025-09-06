@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 
 
 @DataClassName('ProductDB')
 class ProductListingTable extends Table {
-  TextColumn get id => text()();
+  TextColumn get id => text().clientDefault(() => const Uuid().v4())();
   TextColumn get images => text().map(const CidListConverter())();
   TextColumn get category => text()();
   TextColumn get name => text()();

@@ -4,13 +4,11 @@ import 'package:flutter_task/data/models/product_listing_model.dart';
 import 'package:flutter_task/data/repositories/implementation_interface.dart';
 import 'package:flutter_task/data/services/service_interface.dart';
 import 'package:flutter_task/data/utils/Pinata_service.dart';
-import 'package:uuid/uuid.dart';
 
 
 class ProductService implements IService<Product>{
   final IRepository<Product> repository;
   ProductService(this.repository, this.pinataService);
-  final _uuid = Uuid();
   final PinataService pinataService;
 
 
@@ -28,7 +26,6 @@ class ProductService implements IService<Product>{
       urls = await pinataService.uploadFiles(files);
     }
     final productWithId = item.copyWith(
-      id: _uuid.v4(),
       images: urls,
     );
     return await repository.create(productWithId);

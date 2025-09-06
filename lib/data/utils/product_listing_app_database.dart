@@ -2,7 +2,11 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_task/data/models/product_listing_model.dart';
+import 'package:uuid/uuid.dart';
 import '../models/product_listing_table.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+
 part 'product_listing_app_database.g.dart';
 
 @DriftDatabase(tables: [ProductListingTable])
@@ -29,7 +33,9 @@ class AppDatabase extends _$AppDatabase {
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    final file = File('my_sqlite_db.db');
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'my_sqlite_db.db'));
+    print("DB Path: ${file.path}");
     return NativeDatabase(file, setup: (db) {
       db.execute('PRAGMA foreign_keys = ON');
     });

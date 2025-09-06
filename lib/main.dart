@@ -15,12 +15,17 @@ class MyApp extends StatelessWidget
     @override
     Widget build(BuildContext build)
     {
-        return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(fontFamily: 'Urbanist'),
-            home: BottomNavigation()
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          fontFamily: 'Urbanist',
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.grey.shade500,
+          ),
+        ),
+        home: BottomNavigation(),
+      );
 
-        );
     }
 }
 
@@ -211,7 +216,7 @@ class HomeScreen extends StatelessWidget
                         Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 15.0),
                             child: GridView.builder(
-                                physics: NeverScrollableScrollPhysics(), // Let parent scroll
+                                physics: NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
@@ -455,4 +460,7 @@ class _BottomNavigationState extends State<BottomNavigation>
         );
     }
 }
+
+
+
 
