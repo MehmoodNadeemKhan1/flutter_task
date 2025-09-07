@@ -37,8 +37,21 @@ class ProductService implements IService<Product>{
   }
 
   @override
-  Future<Product> updateProduct(String id, Product updatedItem) async {
-   return await repository.update(id, updatedItem);
+  Future<Product> updateProduct(String id, Product updatedItem,{List<File>? files}) async {
+    List<String> urls = [];
+    if (files != null && files.isNotEmpty) {
+      urls = await pinataService.uploadFiles(files);
+    }
+    final productWithimage = updatedItem.copyWith(
+      images: urls,
+    );
+   return await repository.update(id, productWithimage);
+  }
+
+  @override
+  Future<Product?> singleProduct(String id) async {
+
+    return await repository.findByID(id);
   }
 
 }

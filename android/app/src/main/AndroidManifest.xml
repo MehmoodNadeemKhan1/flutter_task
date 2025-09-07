@@ -1,13 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.flutter_task">
 
-    <!-- Android 13 (API 33) aur upar ke liye -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <!-- Android 12 (API 32) aur neeche ke liye -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
-    <!-- Agar camera use karna hai -->
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application

@@ -22,9 +22,31 @@ class AppDatabase extends _$AppDatabase {
   Future<List<ProductDB>> getAllProducts() =>
       select(productListingTable).get();
 
-  // Update
-  Future<bool> updateProduct(Product products) =>
-      update(productListingTable).replace(products as Insertable<ProductDB>);
+  Future<ProductDB?> getProductByID(String id) {
+    return (select(productListingTable)..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+  }
+
+  Future<bool> updateProduct(Product product) {
+    final companion = ProductListingTableCompanion(
+      id: Value(product.id!),
+      name: Value(product.name),
+      category: Value(product.category),
+      price: Value(product.price ?? 0),
+      images: Value(product.images), // List<String>
+      isNegotiable: Value(product.isNegotiable),
+      description: Value(product.description),
+      condition: Value(product.condition),
+      location: Value(product.location),
+      material: Value(product.material),
+      color: Value(product.color),
+      addNote: Value(product.addNote ?? ''),
+      createdAt: Value(product.createdAt ?? DateTime.now().toIso8601String()),
+    );
+    return update(productListingTable).replace(companion);
+  }
+
+
 
   // Delete
   Future<int> deleteProduct(String id) =>

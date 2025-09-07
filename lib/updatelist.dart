@@ -8,17 +8,21 @@ import 'data/repositories/database_based_implementation.dart';
 import 'data/services/product_service.dart';
 import 'data/utils/product_listing_app_database.dart';
 
-class Createlist extends StatefulWidget
+class Updatelist extends StatefulWidget
 {
-    const Createlist({super.key});
+  final Product? product;
+  final String? ID;
+  const Updatelist({super.key, this.product,this.ID});
 
     @override
-    State<Createlist> createState() => _CreatelistState();
+    State<Updatelist> createState() => _UpdatelistState();
 }
 
-class _CreatelistState extends State<Createlist>
+class _UpdatelistState extends State<Updatelist>
 {
     final _formKey = GlobalKey<FormState>();
+
+
 
     final TextEditingController _nameController = TextEditingController();
     final TextEditingController _priceController = TextEditingController();
@@ -26,7 +30,9 @@ class _CreatelistState extends State<Createlist>
     final TextEditingController _colorController = TextEditingController();
     final TextEditingController _addNoteController = TextEditingController();
     bool _isNegotiable = false;
-    List<File> _images = [];
+    List<File> _newImages = [];
+    List<String> _existingImages = [];
+
     bool _isFormValid = false;
     final ImagePicker _picker = ImagePicker();
 
@@ -53,7 +59,7 @@ class _CreatelistState extends State<Createlist>
 
         if (pickedFiles.isNotEmpty) {
           setState(() {
-            _images = pickedFiles.take(5).map((file) => File(file.path)).toList();
+            _newImages = pickedFiles.take(5).map((file) => File(file.path)).toList();
           });
         }
       } else if (status.isPermanentlyDenied) {
@@ -74,52 +80,68 @@ class _CreatelistState extends State<Createlist>
 
 
     @override
-    void initState() 
+    void initState()
     {
         super.initState();
         final db = AppDatabase();
         final repo = ProductDatabaseRepository(db);
         final ipfs = PinataService();
         _productService = ProductService(repo, ipfs);
-    }
-
-    Future<void> _submitForm() async
-    {
-        if (_formKey.currentState!.validate()) 
-        {
-            final product = Product(
-                name: _nameController.text,
-                category: _selectedCategory ?? '',
-                price: int.parse(_priceController.text),
-                images: [],
-                isNegotiable: _isNegotiable,
-                description: _descriptionController.text,
-                condition: _selectedCondition ?? '',
-                location: _selectedLocation ?? '',
-                material: _selectedMaterial ?? '',
-                color: _colorController.text,
-                addNote: _addNoteController.text,
-                createdAt: DateTime.now().toIso8601String()
-            );
-
-            await _productService.createProduct(product, files: _images);
-            if (!mounted) return;
-            Future.delayed(Duration.zero, () {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Product saved successfully!")),
-                );
-              }
-            });
-            _formKey.currentState!.reset();
+        if (widget.product != null) {
+          _nameController.text = widget.product!.name;
+          _priceController.text = widget.product!.price.toString();
+          _descriptionController.text = widget.product!.description;
+          _colorController.text = widget.product!.color;
+          _addNoteController.text = widget.product!.addNote ?? '';
+          _isNegotiable = widget.product!.isNegotiable;
+          _selectedCategory = widget.product!.category;
+          _selectedCondition = widget.product!.condition;
+          _selectedLocation = widget.product!.location;
+          _selectedMaterial = widget.product!.material;
+          _existingImages = widget.product!.images;
         }
     }
 
+    Future<void> _submitForm() async {
+      if (widget.product == null || widget.product!.id == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Cannot update: product not loaded properly.")),
+        );
+        return;
+      }
+
+      if (_formKey.currentState!.validate()) {
+        final updatedProduct = Product(
+          id: widget.product!.id,
+          name: _nameController.text,
+          category: _selectedCategory ?? '',
+          price: int.parse(_priceController.text),
+          images: [..._existingImages, ..._newImages.map((f) => f.path)],
+          isNegotiable: _isNegotiable,
+          description: _descriptionController.text,
+          condition: _selectedCondition ?? '',
+          location: _selectedLocation ?? '',
+          material: _selectedMaterial ?? '',
+          color: _colorController.text,
+          addNote: _addNoteController.text,
+          createdAt: widget.product!.createdAt,
+        );
+
+        await _productService.updateProduct(widget.product!.id!,updatedProduct);
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Product updated successfully!")),
+        );
+        _formKey.currentState!.reset();
+      }
+    }
+
     @override
-    Widget build(BuildContext context) 
+    Widget build(BuildContext context)
     {
         return Scaffold(
-            appBar: AppBar(title: Text("Create Listing")),
+            appBar: AppBar(title: Text("Update Listing")),
             body: Padding(
                 padding: EdgeInsets.all(16),
                 child: Form(
@@ -133,20 +155,40 @@ class _CreatelistState extends State<Createlist>
                      child: Column(
                        children: [
                          Row(
-                           children: List.generate(5, (index) {
-                             return PickImageContainer(
-                               image: index < _images.length ? _images[index] : null,
-                               onAddImage: _pickImages,
-                               onRemove: index < _images.length
-                                   ? () {
-                                 setState(() {
-                                   _images.removeAt(index);
-                                 });
-                               }
-                                   : null,
-                             );
-                           }),
+                           children: [
+                             ..._existingImages.asMap().entries.map((entry) {
+                               final index = entry.key;
+                               final url = entry.value;
+                               return PickImageContainer(
+                                 networkImage: url,
+                                 onAddImage: _pickImages,
+                                 onRemove: () {
+                                   setState(() {
+                                     _existingImages.removeAt(index);
+                                   });
+                                 },
+                               );
+                             }).toList(),
+                             ..._newImages.asMap().entries.map((entry) {
+                               final index = entry.key;
+                               final file = entry.value;
+                               return PickImageContainer(
+                                 image: file,
+                                 onAddImage: _pickImages,
+                                 onRemove: () {
+                                   setState(() {
+                                     _newImages.removeAt(index);
+                                   });
+                                 },
+                               );
+                             }).toList(),
+                             if (_existingImages.length + _newImages.length < 5)
+                               PickImageContainer(
+                                 onAddImage: _pickImages,
+                               ),
+                           ],
                          ),
+
 
                          CustomTextField(controller: _nameController,fieldName: "Item Name",isRequired:true),
                          CustomDropDownField(fieldName: "Choose category", isRequired: true, items: _categories,value: _selectedCategory,onChanged: (val){setState(() {
@@ -209,27 +251,10 @@ class _CreatelistState extends State<Createlist>
                                          decoration: TextDecoration.none
                                      )
                                  ),
-                                 child: Text("Create listing")
+                                 child: Text("Update listing")
                              )
                          ),
                          SizedBox(height: 10,),
-                         if(_isFormValid)
-                         Center(
-                             child: TextButton(onPressed: ()
-                             {
-                             },
-                                 style: TextButton.styleFrom(
-                                     fixedSize: Size(350, 60),
-                                     foregroundColor: Color(0xFF32B780),
-                                     textStyle: TextStyle(
-                                       fontSize: 14,
-                                       fontWeight: FontWeight.w500,
-                                     )
-                                 ),
-                                 child: Text("Sell as Free Item")
-                             )
-                         ),
-                         SizedBox(height: 20,),
                        ],
                      ),
                     )
@@ -242,76 +267,69 @@ class _CreatelistState extends State<Createlist>
 class PickImageContainer extends StatelessWidget {
   final VoidCallback onAddImage;
   final File? image;
+  final String? networkImage;
   final VoidCallback? onRemove;
+
   const PickImageContainer({
     super.key,
     required this.onAddImage,
-    required this.image,
-    required this.onRemove,
+    this.image,
+    this.networkImage,
+    this.onRemove,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 19),
-          child: GestureDetector(
-          onTap: onAddImage,
-          child: Stack(
-            children: [ Container(
+    Widget displayedImage;
+    if (image != null) {
+      displayedImage = Image.file(image!, fit: BoxFit.cover);
+    } else if (networkImage != null) {
+      displayedImage = Image.network(networkImage!, fit: BoxFit.cover);
+    } else {
+      displayedImage = Center(
+        child: Text("+", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: GestureDetector(
+        onTap: onAddImage,
+        child: Stack(
+          children: [
+            Container(
               width: 56,
               height: 56,
               decoration: BoxDecoration(
                 color: Color(0xFFEEEDED),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: image != null
-              ? ClipRRect(
-                child: Image.file(
-                  image!,
-                  width: 56,
-                  height: 56,
-                  fit: BoxFit.cover,
-                ),
-              )
-                  :Center(
-                child: Text(
-                  "+",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-              )
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: displayedImage,
+              ),
             ),
-              if (onRemove != null)
-                Positioned(
-                  top: -5,
-                  right: -5,
-                  child: GestureDetector(
-                    onTap: onRemove,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.close,
-                          size: 14,
-                          color: Colors.red[800],
-                        ),
-                      ),
-                    ),
+            if (onRemove != null)
+              Positioned(
+                top: -5,
+                right: -5,
+                child: GestureDetector(
+                  onTap: onRemove,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    child: Icon(Icons.close, size: 14, color: Colors.red[800]),
                   ),
                 ),
-            ]
-          ),
-                ),
+              ),
+          ],
         ),
-    ]
+      ),
     );
   }
 }
+
 
 class CustomTextField extends StatelessWidget {
   const CustomTextField({

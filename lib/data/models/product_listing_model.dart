@@ -6,7 +6,7 @@ part 'product_listing_model.g.dart';
 @freezed
 class Product with _$Product{
   const factory Product({
-     String? id,
+    String? id,
     required List<String> images,
     required String category,
     required String name,
@@ -18,7 +18,7 @@ class Product with _$Product{
     required String material,
     required String color,
     String? addNote,
-     String? createdAt,
+    String? createdAt,
 }) = _Product;
 
   factory Product.fromJson(Map<String,dynamic>json)=>_$ProductFromJson(json);

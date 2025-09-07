@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_task/data/models/product_listing_model.dart';
-
 import '../utils/product_listing_app_database.dart';
 import 'implementation_interface.dart';
 
@@ -38,6 +37,7 @@ class ProductDatabaseRepository implements IRepository<Product>
         return users.map((u)
             {
                 return Product(
+                    id: u.id,
                     images: u.images,
                     category: u.category,
                     name: u.name,
@@ -57,9 +57,9 @@ class ProductDatabaseRepository implements IRepository<Product>
     @override
     Future<Product> update(String id, Product updatedItem) async
     {
-
         await db.updateProduct(
             Product(
+                id: id,
                 images: updatedItem.images,
                 category: updatedItem.category,
                 name: updatedItem.name,
@@ -87,6 +87,27 @@ class ProductDatabaseRepository implements IRepository<Product>
             return false;
         }
     }
+
+  @override
+  Future<Product> findByID(String id) async {
+      final u = await db.getProductByID(id);
+          return Product(
+              id: u?.id,
+              images: u!.images,
+              category: u.category,
+              name: u.name,
+              description: u.description,
+              price: u.price,
+              isNegotiable: u.isNegotiable,
+              condition: u.condition,
+              location: u.location,
+              material: u.material,
+              color: u.color,
+              addNote: u.addNote
+          );
+
+
+  }
 
 
 }
