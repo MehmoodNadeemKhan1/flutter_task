@@ -20,6 +20,7 @@ class Updatelist extends StatefulWidget
 
 class _UpdatelistState extends State<Updatelist>
 {
+  final List<int> indexList=[];
     final _formKey = GlobalKey<FormState>();
 
 
@@ -127,7 +128,12 @@ class _UpdatelistState extends State<Updatelist>
           createdAt: widget.product!.createdAt,
         );
 
-        await _productService.updateProduct(widget.product!.id!,updatedProduct);
+        await _productService.updateProduct(
+          widget.product!.id!,
+          updatedProduct,
+          files: _newImages,
+          index:indexList
+        );
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -155,39 +161,41 @@ class _UpdatelistState extends State<Updatelist>
                      child: Column(
                        children: [
                          Row(
-                           children: [
-                             ..._existingImages.asMap().entries.map((entry) {
-                               final index = entry.key;
-                               final url = entry.value;
+                           children: List.generate(5, (index) {
+                             if (index < _existingImages.length) {
+                               final url = _existingImages[index];
                                return PickImageContainer(
                                  networkImage: url,
                                  onAddImage: _pickImages,
                                  onRemove: () {
+                                   indexList.addAll([index]);
                                    setState(() {
-                                     _existingImages.removeAt(index);
+                                     _existingImages = [..._existingImages]..removeAt(index);
                                    });
                                  },
                                );
-                             }).toList(),
-                             ..._newImages.asMap().entries.map((entry) {
-                               final index = entry.key;
-                               final file = entry.value;
+                             }
+                             else if (index - _existingImages.length < _newImages.length) {
+                               final file = _newImages[index - _existingImages.length];
                                return PickImageContainer(
                                  image: file,
                                  onAddImage: _pickImages,
                                  onRemove: () {
                                    setState(() {
-                                     _newImages.removeAt(index);
+                                     _newImages.removeAt(index - _existingImages.length);
                                    });
                                  },
                                );
-                             }).toList(),
-                             if (_existingImages.length + _newImages.length < 5)
-                               PickImageContainer(
+                             }
+
+                             else {
+                               return PickImageContainer(
                                  onAddImage: _pickImages,
-                               ),
-                           ],
+                               );
+                             }
+                           }),
                          ),
+
 
 
                          CustomTextField(controller: _nameController,fieldName: "Item Name",isRequired:true),
@@ -238,7 +246,7 @@ class _UpdatelistState extends State<Updatelist>
                              child: ElevatedButton(
                                  onPressed: _isFormValid ? _submitForm : null,
                                  style: ElevatedButton.styleFrom(
-                                     padding: EdgeInsets.only(left: 62, right: 62, top: 18, bottom: 18),
+                                     padding: EdgeInsets.only(left: 62, right: 62, top: 13,bottom: 13),
                                      fixedSize: Size(350, 48),
                                      backgroundColor: Color(0xFF32B780),
                                      foregroundColor: Color(0xFFFFFFFF),

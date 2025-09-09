@@ -37,16 +37,38 @@ class ProductService implements IService<Product>{
   }
 
   @override
-  Future<Product> updateProduct(String id, Product updatedItem,{List<File>? files}) async {
-    List<String> urls = [];
-    if (files != null && files.isNotEmpty) {
-      urls = await pinataService.uploadFiles(files);
+  Future<Product> updateProduct(
+      String id,
+      Product updatedItem, {
+        List<File>? files,
+        List<int>? index,
+      }) async {
+    var prod = await singleProduct(id);
+    print("Image Index List $index");
+
+    List<String> urls = List.from(prod?.images ?? []);
+
+    final removeList = List<int>.from(index ?? [])..sort((a, b) => b.compareTo(a));
+
+    for (var i in removeList) {
+      if (i >= 0 && i < urls.length) {
+        print("Removing ${urls[i]} at index $i");
+        urls.removeAt(i);
+      }
     }
+
+    if (files != null && files.isNotEmpty) {
+      final newUrls = await pinataService.uploadFiles(files);
+      urls.addAll(newUrls ?? []);
+    }
+
     final productWithimage = updatedItem.copyWith(
       images: urls,
     );
-   return await repository.update(id, productWithimage);
+
+    return await repository.update(id, productWithimage);
   }
+
 
   @override
   Future<Product?> singleProduct(String id) async {

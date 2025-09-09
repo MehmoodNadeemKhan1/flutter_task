@@ -55,6 +55,8 @@ class _CreatelistState extends State<Createlist>
           setState(() {
             _images = pickedFiles.take(5).map((file) => File(file.path)).toList();
           });
+          _formKey.currentState?.validate();
+
         }
       } else if (status.isPermanentlyDenied) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -69,9 +71,6 @@ class _CreatelistState extends State<Createlist>
         );
       }
     }
-
-
-
 
     @override
     void initState() 
@@ -131,23 +130,76 @@ class _CreatelistState extends State<Createlist>
                     },
                     child: SingleChildScrollView(
                      child: Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
                        children: [
-                         Row(
-                           children: List.generate(5, (index) {
-                             return PickImageContainer(
-                               image: index < _images.length ? _images[index] : null,
-                               onAddImage: _pickImages,
-                               onRemove: index < _images.length
-                                   ? () {
-                                 setState(() {
-                                   _images.removeAt(index);
-                                 });
-                               }
-                                   : null,
-                             );
-                           }),
+                         Padding(
+                           padding: const EdgeInsets.only(left: 20,bottom: 15),
+                           child: RichText(
+                             text: TextSpan(
+                               children: [
+                                 const TextSpan(
+                                   text: "Add Image",
+                                   style: TextStyle(color: Colors.black, fontSize: 16),
+                                 ),
+                                 const TextSpan(
+                                   text: " *",
+                                   style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                                 ),
+                               ],
+                             ),
+                           ),
                          ),
-
+                         FormField<List<File>>(
+                           validator: (value) {
+                             if (_images.isEmpty) {
+                               return "At least one image is required";
+                             }
+                             return null;
+                           },
+                           builder: (state) {
+                             return Column(
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               children: [
+                                 SizedBox(
+                                   height: 70, // container ki height fix karni zaroori hai
+                                   child: SingleChildScrollView(
+                                     scrollDirection: Axis.horizontal,
+                                     child: Row(
+                                       children: List.generate(5, (index) {
+                                         return Padding(
+                                           padding: const EdgeInsets.only(right: 8), // thoda gap dena images ke beech
+                                           child: PickImageContainer(
+                                             image: index < _images.length ? _images[index] : null,
+                                             onAddImage: () async {
+                                               await _pickImages();
+                                               state.didChange(_images);
+                                             },
+                                             onRemove: index < _images.length
+                                                 ? () {
+                                               setState(() {
+                                                 _images.removeAt(index);
+                                               });
+                                               state.didChange(_images);
+                                             }
+                                                 : null,
+                                           ),
+                                         );
+                                       }),
+                                     ),
+                                   ),
+                                 ),
+                                 if (state.hasError)
+                                   Padding(
+                                     padding: const EdgeInsets.only(left: 20, top: 5),
+                                     child: Text(
+                                       state.errorText!,
+                                       style: const TextStyle(color: Colors.red, fontSize: 12),
+                                     ),
+                                   ),
+                               ],
+                             );
+                           },
+                         ),
                          CustomTextField(controller: _nameController,fieldName: "Item Name",isRequired:true),
                          CustomDropDownField(fieldName: "Choose category", isRequired: true, items: _categories,value: _selectedCategory,onChanged: (val){setState(() {
                            _selectedCategory = val;
@@ -155,7 +207,6 @@ class _CreatelistState extends State<Createlist>
                          CustomTextField(controller: _descriptionController,fieldName: "Description",isRequired:true),
                          CustomTextField(controller: _priceController,fieldName: "Price in USD",isRequired:true,keyboardType: TextInputType.number,),
                          Row(
-
                            children: [
                              Expanded(
                                child: Padding(
@@ -176,6 +227,7 @@ class _CreatelistState extends State<Createlist>
                                    _isNegotiable = val ?? false;
                                  });
                                },
+
                              ),
                            ],
                          ),
@@ -196,7 +248,7 @@ class _CreatelistState extends State<Createlist>
                              child: ElevatedButton(
                                  onPressed: _isFormValid ? _submitForm : null,
                                  style: ElevatedButton.styleFrom(
-                                     padding: EdgeInsets.only(left: 62, right: 62, top: 18, bottom: 18),
+                                     padding: EdgeInsets.only(left: 62, right: 62, top: 13,bottom: 13),
                                      fixedSize: Size(350, 48),
                                      backgroundColor: Color(0xFF32B780),
                                      foregroundColor: Color(0xFFFFFFFF),
@@ -206,14 +258,12 @@ class _CreatelistState extends State<Createlist>
                                      textStyle: TextStyle(
                                          fontSize: 14,
                                          fontWeight: FontWeight.w500,
-                                         decoration: TextDecoration.none
                                      )
                                  ),
                                  child: Text("Create listing")
                              )
                          ),
                          SizedBox(height: 10,),
-                         if(_isFormValid)
                          Center(
                              child: TextButton(onPressed: ()
                              {
@@ -301,11 +351,13 @@ class PickImageContainer extends StatelessWidget {
                           color: Colors.red[800],
                         ),
                       ),
+
                     ),
                   ),
                 ),
             ]
           ),
+
                 ),
         ),
     ]

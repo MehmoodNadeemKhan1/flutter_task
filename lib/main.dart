@@ -5,6 +5,12 @@ import 'package:flutter_task/showproducts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:svg_flutter/svg.dart';
 
+import 'data/models/product_listing_model.dart';
+import 'data/repositories/database_based_implementation.dart';
+import 'data/services/product_service.dart';
+import 'data/utils/Pinata_service.dart';
+import 'data/utils/product_listing_app_database.dart';
+
 void main()
 {
     runApp(MyApp());
@@ -15,60 +21,90 @@ class MyApp extends StatelessWidget
     @override
     Widget build(BuildContext build)
     {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          fontFamily: 'Urbanist',
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.grey.shade500,
-          ),
-        ),
-        home: BottomNavigation(),
-      );
+        return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+                fontFamily: 'Urbanist',
+                colorScheme: ColorScheme.fromSeed(
+                    seedColor: Colors.grey.shade500
+                )
+            ),
+            home: BottomNavigation()
+        );
 
     }
 }
 
-class HomeScreen extends StatelessWidget
+class HomeScreen extends StatefulWidget
 {
+    HomeScreen({Key? key}) : super(key: key);
 
-  String getGreeting(){
-    final hour = DateTime.now().hour;
+    @override
+    State<HomeScreen> createState() => _HomeScreenState();
 
-    if (hour >= 5 && hour < 12) {
-      return "Good Morning";
-    } else if (hour >= 12 && hour < 17) {
-      return "Good Afternoon";
-    } else if (hour >= 17 && hour < 21) {
-      return "Good Evening";
-    } else {
-      return "Good Night";
+}
+
+class _HomeScreenState extends State<HomeScreen>
+{
+    late final ProductService _productService;
+    List<Product> _products = [];
+    bool _isLoading = true;
+
+    @override
+    void initState() 
+    {
+        super.initState();
+        final db = AppDatabase();
+        final repo = ProductDatabaseRepository(db);
+        final ipfs = PinataService();
+        _productService = ProductService(repo, ipfs);
+        _fetchProducts();
     }
-  }
 
-    final List<Map<String, String>> images = [
-    {"image":"assets/images/image2.png", "name":"Shoes"},
-    {"image":"assets/images/image3.png","name":"Shoes"},
-    {"image":"assets/images/image4.png","name":"Shoes"},
-    {"image":"assets/images/image5.png","name":"Shoes"},
-    {"image":"assets/images/image6.png","name":"Shoes"},
-    {"image":"assets/images/image2.png","name":"Shoes"},
-    {"image":"assets/images/image3.png","name":"Shoes"},
-    {"image":"assets/images/image4.png","name":"Shoes"},
-    {"image":"assets/images/image5.png","name":"Shoes"},
-    {"image":"assets/images/image6.png","name":"Shoes"}
+    Future<void> _fetchProducts() async
+    {
+        final products = await _productService.allProducts();
+        setState(()
+            {
+                _products = products ?? [];
+                _isLoading = false;
+            }
+        );
+    }
 
-    ];
+    Future<void> _findProduct(String id) async {
+      final data = await _productService.singleProduct(id);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductDetail(productD: data),
+        ),
+      );
+    }
 
-    final List<Map<String, String>> products = [
-    {"image": "assets/images/image7.png", "name": "24K Gold Elegantly crafted with lustrous pearls", "price": "USD 50"},
-    {"image": "assets/images/image8.png", "name": "24K Gold Elegantly crafted with lustrous pearls", "price": "USD 70"},
-    {"image": "assets/images/image9.png", "name": "24K Gold Elegantly crafted with lustrous pearls", "price": "USD 120"},
-    {"image": "assets/images/image10.png", "name": "24K Gold Elegantly crafted with lustrous pearls", "price": "USD 25"},
-    {"image": "assets/images/image11.png", "name": "24K Gold Elegantly crafted with lustrous pearls", "price": "USD 90"},
-    {"image": "assets/images/image12.png", "name": "24K Gold Elegantly crafted with lustrous pearls", "price": "USD 40"}
-    ];
+    final List<Map<String, String>> images = [{"image":"assets/images/image2.png", "name":"Shoes"}, {"image":"assets/images/image3.png","name":"Shoes"}, {"image":"assets/images/image4.png","name":"Shoes"}, {"image":"assets/images/image5.png","name":"Shoes"}, {"image":"assets/images/image6.png","name":"Shoes"}, {"image":"assets/images/image2.png","name":"Shoes"}, {"image":"assets/images/image3.png","name":"Shoes"}, {"image":"assets/images/image4.png","name":"Shoes"}, {"image":"assets/images/image5.png","name":"Shoes"}, {"image":"assets/images/image6.png","name":"Shoes"}];
 
+    String getGreeting() 
+    {
+        final hour = DateTime.now().hour;
+
+        if (hour >= 5 && hour < 12) 
+        {
+            return "Good Morning";
+        }
+        else if (hour >= 12 && hour < 17) 
+        {
+            return "Good Afternoon";
+        }
+        else if (hour >= 17 && hour < 21) 
+        {
+            return "Good Evening";
+        }
+        else 
+        {
+            return "Good Night";
+        }
+    }
 
     @override
     Widget build(BuildContext context)
@@ -97,7 +133,6 @@ class HomeScreen extends StatelessWidget
 
                                 decoration: InputDecoration(
                                     hint: Text("Explore to next purchase."),
-
                                     prefixIcon: Image.asset("assets/images/Search.png"),
                                     suffixIcon: Image.asset("assets/images/filter.png"),
                                     border: OutlineInputBorder(
@@ -212,29 +247,29 @@ class HomeScreen extends StatelessWidget
                         ),
 
                         const SizedBox(height: 15),
-
                         Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                            child: GridView.builder(
-                                physics: NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 15,
-                                    mainAxisSpacing: 15,
-                                    childAspectRatio: 0.75
-                                ),
-                                itemCount: products.length,
-                                itemBuilder: (context, index)
-                                {
-                                    return ProductCard(
-                                        image: products[index]["image"]!,
-                                        name: products[index]["name"]!,
-                                        price: products[index]["price"]!
-                                    );
-                                }
+                            child: _isLoading
+                                ? const Center(child: CircularProgressIndicator())
+                                : _products.isEmpty
+                                    ? const Center(child: Text("No products available")) :
+                            GridView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 15,
+                                mainAxisSpacing: 15,
+                                childAspectRatio: 0.75,
+                              ),
+                              itemCount: _products.length,
+                              itemBuilder: (context, index) {
+                                final product = _products[index];
+                                return ProductCard(product: product);
+                              },
                             )
                         )
+
                     ]
                 )
             )
@@ -242,113 +277,104 @@ class HomeScreen extends StatelessWidget
     }
 }
 
-class ProductCard extends StatefulWidget
-{
-    final String image;
-    final String name;
-    final String price;
+class ProductCard extends StatefulWidget {
+  final Product product;
 
-    ProductCard({
-        required this.image,
-        required this.name,
-        required this.price
-    });
+  const ProductCard({
+    Key? key,
+    required this.product,
+  }) : super(key: key);
 
-    @override
-    _ProductCardState createState() => _ProductCardState();
+  @override
+  _ProductCardState createState() => _ProductCardState();
 }
 
-class _ProductCardState extends State<ProductCard>
-{
-    bool isFavorite = false;
+class _ProductCardState extends State<ProductCard> {
+  bool isFavorite = false;
 
-    @override
-    Widget build(BuildContext context)
-    {
-        return Container(
-            decoration: BoxDecoration(
-                color: Colors.white
-            // boxShadow: [
-            //   BoxShadow(
-            //     color: Colors.black12,
-            //     spreadRadius: 1,
-            //     blurRadius: 5,
-            //     offset: Offset(0, 3),
-            //   ),
-            // ],
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Container(
+        decoration: const BoxDecoration(color: Colors.white),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ProductDetail(productD: widget.product),
+                    ),
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4), // optional rounding
+                  child: widget.product.images.isNotEmpty &&
+                      widget.product.images.first.startsWith("http")
+                      ? Image.network(
+                    widget.product.images.first,
+                    fit: BoxFit.cover,      // 👈 yeh pura container cover karega
+                    width: double.infinity, // 👈 full width le lega
+                    height: double.infinity,// 👈 full height le lega
+                    errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image, size: 50),
+                  )
+                      : Image.asset(
+                    widget.product.images.isNotEmpty
+                        ? widget.product.images.first
+                        : "assets/images/placeholder.png",
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                ),
+              ),
             ),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                    Expanded(
-                        child: GestureDetector(
-                            onTap: ()
-                            {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ProductDetail()
-                                    )
-                                );
-                            },
-
-                            child: Stack(
-                                children: [
-                                    ClipRRect(
-                                        child: Image.asset(
-                                            widget.image,
-                                            fit: BoxFit.cover,
-                                            width: double.infinity
-                                        )
-                                    )
-                                ]
-                            )
-                        )
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                        widget.name,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14
-                        )
-                    ),
-                    Expanded(
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                                Text(
-                                    widget.price,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                        color: Colors.black
-                                    )
-                                ),
-                                GestureDetector(
-                                    onTap: ()
-                                    {
-                                        setState(()
-                                            {
-                                                isFavorite = !isFavorite;
-                                            }
-                                        );
-                                    },
-                                    child: Icon(
-                                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                                        color: isFavorite ? Colors.red : Colors.green,
-                                        size: 24
-                                    )
-                                )
-                            ]
-                        )
-                    )
-                ]
+            const SizedBox(height: 8),
+            Text(
+              widget.product.name,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "USD ${widget.product.price}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.black,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isFavorite = !isFavorite;
+                    });
+                  },
+                  child: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : Colors.green,
+                    size: 24,
+                  ),
+                ),
+              ],
             )
-        );
-    }
-
+          ],
+        ),
+      ),
+    );
+  }
 }
+
 
 class BottomNavigation extends StatefulWidget
 {
@@ -367,10 +393,9 @@ class _BottomNavigationState extends State<BottomNavigation>
 
     static final List<Widget> _widgetOptions = <Widget>[
         HomeScreen(),
-       Showproducts(),
+        Showproducts(),
         const Text('Index 2: Chat', style: optionStyle),
         const Text('Index 3: Settings', style: optionStyle)
-
     ];
 
     void _onItemTapped(int index)
@@ -432,7 +457,7 @@ class _BottomNavigationState extends State<BottomNavigation>
                                 ),
                                 IconButton(
                                     icon: Icon(
-                                        _selectedIndex == 1 ? Iconsax.category_24 : Iconsax.category_24
+                                        _selectedIndex == 1 ? Icons.category : Icons.category_outlined
                                     ),
                                     color: Colors.black87,
                                     onPressed: () => _onItemTapped(1)
@@ -460,7 +485,4 @@ class _BottomNavigationState extends State<BottomNavigation>
         );
     }
 }
-
-
-
 
